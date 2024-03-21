@@ -2,25 +2,26 @@ package com.javagrunt.batch.github;
 
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.support.transaction.TransactionAwareProxyFactory;
 import org.springframework.lang.NonNull;
+import redis.clients.jedis.JedisPooled;
 
 import java.util.List;
 
-class TimeSeriesDataWriter implements ItemWriter<List<SimpleTimeSeriesData>> {
+class TimeSeriesDataWriter<T> implements ItemWriter<T> {
 
-    List<List<SimpleTimeSeriesData>> output = TransactionAwareProxyFactory.createTransactionalList();
+    private final JedisPooled jedisPooled;
+
+    TimeSeriesDataWriter(JedisPooled jedisPooled) {
+        this.jedisPooled = jedisPooled;
+    }
 
     @Override
-    public void write(@NonNull Chunk<? extends List<SimpleTimeSeriesData>> chunk) throws Exception {
-        for(List<SimpleTimeSeriesData> data : chunk.getItems()) {
-            for(SimpleTimeSeriesData tsd : data) {
-                
+    public void write(@NonNull Chunk<? extends T> chunk) {
+        for(var data : chunk.getItems()) {
+            for(SimpleTimeSeriesData tsd : (List<SimpleTimeSeriesData>)data) {
+                jedisPooled.tsAdd(tsd.key(), tsd.timestamp(), tsd.value());
             }
         }
     }
     
-    public List<List<SimpleTimeSeriesData>> getOutput() {
-        return output;
-    }
 }
