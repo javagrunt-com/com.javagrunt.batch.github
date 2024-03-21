@@ -1,19 +1,17 @@
 package com.javagrunt.batch.github;
 
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameter;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 
-import java.util.HashMap;
-
-
 @SpringBootApplication
+@EnableConfigurationProperties(JobProperties.class)
 public class Application {
 
 	public static void main(String[] args) {

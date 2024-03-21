@@ -9,7 +9,7 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 import redis.clients.jedis.JedisPooled;
 
 import java.io.IOException;
@@ -31,20 +31,16 @@ public class JobConfiguration {
     @Bean
     List<GHRepository> repositories() throws IOException {
         ArrayList<GHRepository> repositories = new ArrayList<>();
-        System.out.println("Tokens: " + jobProperties.getTokens().length);
-        for (String token : jobProperties.getTokens()) {
-            GitHub github = new GitHubBuilder().withOAuthToken(token).build();
-            GHOrganization org = github.getOrganization(organization);
-            for (GHRepository repo : org.listRepositories()) {
-                if (!repo.isPrivate() && repo.hasPushAccess()) {
-                    repositories.add(repo);
-                }
+        GitHub github = new GitHubBuilder().withOAuthToken(jobProperties.token()).build();
+        GHOrganization org = github.getOrganization(jobProperties.organization());
+        for (GHRepository repo : org.listRepositories()) {
+            if (!repo.isPrivate() && repo.hasPushAccess()) {
+                repositories.add(repo);
             }
         }
         return repositories;
     }
-
-
+    
     @Bean
     ItemReader<GHRepository> reader(List<GHRepository> repositories) {
         return new RepositoryReader(repositories);
@@ -62,7 +58,7 @@ public class JobConfiguration {
 
     @Bean
     Step step1(JobRepository jobRepository,
-               DataSourceTransactionManager transactionManager,
+               PlatformTransactionManager transactionManager,
                ItemReader<GHRepository> reader,
                RepositoryProcessor processor,
                TimeSeriesDataWriter<List<SimpleTimeSeriesData>> writer) {
