@@ -17,22 +17,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class JobConfiguration {
+public class BatchJobConfiguration {
 
-    private final JobProperties jobProperties;
+    private final BatchJobProperties batchJobProperties;
     private final JedisPooled jedisPooled;
 
-    JobConfiguration(JobProperties jobProperties,
-                     JedisPooled jedisPooled) {
-        this.jobProperties = jobProperties;
-        this.jedisPooled = jedisPooled;
+    BatchJobConfiguration(BatchJobProperties batchJobProperties) {
+        this.batchJobProperties = batchJobProperties;
+        this.jedisPooled = new JedisPooled(batchJobProperties.redis_host(), batchJobProperties.redis_port());
     }
 
     @Bean
     List<GHRepository> repositories() throws IOException {
         ArrayList<GHRepository> repositories = new ArrayList<>();
-        GitHub github = new GitHubBuilder().withOAuthToken(jobProperties.token()).build();
-        GHOrganization org = github.getOrganization(jobProperties.organization());
+        GitHub github = new GitHubBuilder().withOAuthToken(batchJobProperties.token()).build();
+        GHOrganization org = github.getOrganization(batchJobProperties.organization());
         for (GHRepository repo : org.listRepositories()) {
             if (!repo.isPrivate() && repo.hasPushAccess()) {
                 repositories.add(repo);

@@ -5,11 +5,10 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
-import org.springframework.expression.common.LiteralExpression;
 
 import java.util.List;
 
-public class RepositoryReader implements ItemReader<GHRepository> {
+class RepositoryReader implements ItemReader<GHRepository> {
     
     private final List<GHRepository> repositories;
     
